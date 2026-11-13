@@ -18,8 +18,8 @@ if not api_key:
 # Configurazione di Gemini
 genai.configure(api_key=api_key)
 
-# Inizializzazione del modello Gemini (usiamo gemini-1.5-flash che è stabile e versatile)
-model = genai.GenerativeModel('gemini-1.5-flash')
+# Inizializzazione del modello Gemini con il nome aggiornato supportato
+model = genai.GenerativeModel('gemini-2.5-flash')
 
 # Funzione per cercare sul web in modo sicuro
 def search_web(query):
@@ -41,7 +41,6 @@ for message in st.session_state.chat_history:
 
 # Input dell'utente
 if prompt := st.chat_input("Scrivi qualsiasi cosa (es. 'Come stai?', 'Crea una web app', ecc.):"):
-    # Mostra subito il messaggio dell'utente
     st.session_state.chat_history.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
         st.markdown(prompt)
@@ -49,7 +48,7 @@ if prompt := st.chat_input("Scrivi qualsiasi cosa (es. 'Come stai?', 'Crea una w
     with st.chat_message("assistant"):
         with st.spinner("L'agente sta rispondendo..."):
             try:
-                # Controlliamo se la domanda richiede una ricerca web (es. parole chiave di attualità o ricerca)
+                # Controlliamo se la domanda richiede una ricerca web
                 parole_chiave_web = ["notizie", "meteo", "ultime", "chi è", "cos'è", "cerca", "previsioni"]
                 usa_web = any(parola in prompt.lower() for parola in parole_chiave_web)
                 
