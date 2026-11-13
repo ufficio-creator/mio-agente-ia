@@ -18,8 +18,8 @@ if not api_key:
 # Configurazione di Gemini
 genai.configure(api_key=api_key)
 
-# Inizializzazione del modello Gemini con il modello stabile gemini-1.5-flash
-model = genai.GenerativeModel('gemini-1.5-flash')
+# Inizializzazione del modello con gemini-3.8-flash (modello aggiornato e supportato)
+model = genai.GenerativeModel('models/gemini-3.8-flash')
 
 # Funzione per cercare sul web in modo sicuro
 def search_web(query):
