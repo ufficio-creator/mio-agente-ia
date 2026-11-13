@@ -25,7 +25,7 @@ def search_web(query):
             results = [r['body'] for r in ddgs.text(query, max_results=3)]
             return "\n".join(results)
     except Exception as e:
-        return f"Errore durante la ricerca web: {e}"
+        return ""
 
 # Memoria della chat
 if "messages" not in st.session_state:
@@ -42,21 +42,30 @@ if prompt := st.chat_input("Chiedimi qualcosa o cercalo sul web..."):
         st.markdown(prompt)
 
     with st.chat_message("assistant"):
-        with st.spinner("Cerco sul web ed elaboro la risposta..."):
-            web_results = search_web(prompt)
-            
-            context_prompt = f"""
-            Sei un assistente intelligente. Usa queste informazioni appena trovate sul web per rispondere in modo preciso e aggiornato:
-            {web_results}
-            
-            Domanda dell'utente: {prompt}
-            """
-            
-            response = client.models.generate_content(
-                model='gemini-2.5-flash',
-                contents=context_prompt
-            )
-            answer = response.text
+        with st.spinner("Elaboro la risposta..."):
+            # Controlliamo se è un saluto o una domanda generica
+            saluti = ["ciao", "salve", "buongiorno", "buonasera", "hey", "hi"]
+            if prompt.strip().lower() in saluti:
+                answer = "Ciao! Come posso aiutarti oggi? Posso risponderti o cercare informazioni aggiornate per te sul web."
+            else:
+                web_results = search_web(prompt)
+                
+                if web_results:
+                    context_prompt = f"""
+                    Usa queste informazioni fresche dal web per rispondere alla domanda dell'utente:
+                    {web_results}
+                    
+                    Domanda dell'utente: {prompt}
+                    """
+                else:
+                    context_prompt = prompt
+                
+                # Usiamo gemini-2.0-flash che è il modello standard stabile
+                response = client.models.generate_content(
+                    model='gemini-2.0-flash',
+                    contents=context_prompt
+                )
+                answer = response.text
             
             st.markdown(answer)
             st.session_state.messages.append({"role": "assistant", "content": answer})
