@@ -1,12 +1,12 @@
 import streamlit as st
-from google import genai
+import google.generativeai as genai
 from duckduckgo_search import DDGS
 
 # Configurazione della pagina
-st.set_page_config(page_title="Il Mio Agente IA Privato", page_icon="🤖", layout="centered")
+st.set_page_config(page_title="Il Mio Agente IA Universale", page_icon="🤖", layout="centered")
 
-st.title("🤖 Il Mio Agente IA con Ricerca Web")
-st.write("Agente privato, gratuito e in grado di cercare informazioni aggiornate sul web.")
+st.title("🤖 Il Mio Agente IA Universale")
+st.write("Un assistente conversazionale capace di chattare, programmare e cercare sul web.")
 
 # Barra laterale per inserire la chiave API
 api_key = st.sidebar.text_input("Inserisci la tua Google Gemini API Key", type="password")
@@ -15,57 +15,63 @@ if not api_key:
     st.warning("⚠️ Inserisci la tua API Key nella barra a sinistra per iniziare.")
     st.stop()
 
-# Collegamento a Gemini
-client = genai.Client(api_key=api_key)
+# Configurazione di Gemini
+genai.configure(api_key=api_key)
 
-# Funzione che cerca su DuckDuckGo
+# Inizializzazione del modello Gemini (usiamo gemini-1.5-flash che è stabile e versatile)
+model = genai.GenerativeModel('gemini-1.5-flash')
+
+# Funzione per cercare sul web in modo sicuro
 def search_web(query):
     try:
         with DDGS() as ddgs:
             results = [r['body'] for r in ddgs.text(query, max_results=3)]
             return "\n".join(results)
-    except Exception as e:
+    except Exception:
         return ""
 
-# Memoria della chat
-if "messages" not in st.session_state:
-    st.session_state.messages = []
+# Gestione della cronologia della chat in Streamlit
+if "chat_history" not in st.session_state:
+    st.session_state.chat_history = []
 
-for message in st.session_state.messages:
+# Mostra i messaggi precedenti
+for message in st.session_state.chat_history:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
 
-# Casella per scrivere all'agente
-if prompt := st.chat_input("Chiedimi qualcosa o cercalo sul web..."):
-    st.session_state.messages.append({"role": "user", "content": prompt})
+# Input dell'utente
+if prompt := st.chat_input("Scrivi qualsiasi cosa (es. 'Come stai?', 'Crea una web app', ecc.):"):
+    # Mostra subito il messaggio dell'utente
+    st.session_state.chat_history.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
         st.markdown(prompt)
 
     with st.chat_message("assistant"):
-        with st.spinner("Elaboro la risposta..."):
-            # Controlliamo se è un saluto o una domanda generica
-            saluti = ["ciao", "salve", "buongiorno", "buonasera", "hey", "hi"]
-            if prompt.strip().lower() in saluti:
-                answer = "Ciao! Come posso aiutarti oggi? Posso risponderti o cercare informazioni aggiornate per te sul web."
-            else:
-                web_results = search_web(prompt)
+        with st.spinner("L'agente sta rispondendo..."):
+            try:
+                # Controlliamo se la domanda richiede una ricerca web (es. parole chiave di attualità o ricerca)
+                parole_chiave_web = ["notizie", "meteo", "ultime", "chi è", "cos'è", "cerca", "previsioni"]
+                usa_web = any(parola in prompt.lower() for parola in parole_chiave_web)
                 
-                if web_results:
-                    context_prompt = f"""
-                    Usa queste informazioni fresche dal web per rispondere alla domanda dell'utente:
-                    {web_results}
-                    
-                    Domanda dell'utente: {prompt}
-                    """
-                else:
-                    context_prompt = prompt
-                
-                # Usiamo gemini-2.0-flash che è il modello standard stabile
-                response = client.models.generate_content(
-                    model='gemini-2.0-flash',
-                    contents=context_prompt
-                )
+                contesto_web = ""
+                if usa_web:
+                    risultati_web = search_web(prompt)
+                    if risultati_web:
+                        contesto_web = f"\nInformazioni fresche dal web:\n{risultati_web}\n"
+
+                # Prompt finale per l'IA
+                prompt_finale = f"""
+                Sei un assistente IA esperto, amichevole e versatile, capace di risolvere problemi di qualsiasi tipo, programmare e conversare.
+                {contesto_web}
+                Domanda/Messaggio dell'utente: {prompt}
+                """
+
+                # Generazione della risposta
+                response = model.generate_content(prompt_finale)
                 answer = response.text
-            
+
+            except Exception as e:
+                answer = f"⚠️ Si è verificato un piccolo problema tecnico con l'API: {e}. Controlla che la chiave API sia corretta."
+
             st.markdown(answer)
-            st.session_state.messages.append({"role": "assistant", "content": answer})
+            st.session_state.chat_history.append({"role": "assistant", "content": answer})
