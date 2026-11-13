@@ -3,10 +3,10 @@ from google import genai
 from duckduckgo_search import DDGS
 
 # Configurazione della pagina
-st.set_page_config(page_title="Il Mio Agente IA Veloce", page_icon="⚡", layout="centered")
+st.set_page_config(page_title="Il Mio Agente IA Universale", page_icon="⚡", layout="centered")
 
-st.title("⚡ Il Mio Agente IA Veloce")
-st.write("Assistente ultra-rapido con attivazione intelligente della ricerca web.")
+st.title("⚡ Il Mio Agente IA Universale")
+st.write("Assistente veloce, reattivo e ottimizzato.")
 
 # Barra laterale per inserire la chiave API
 api_key = st.sidebar.text_input("Inserisci la tua Google Gemini API Key", type="password")
@@ -15,10 +15,10 @@ if not api_key:
     st.warning("⚠️ Inserisci la tua API Key nella barra a sinistra per iniziare.")
     st.stop()
 
-# Collegamento ottimizzato con google-genai
+# Collegamento ufficiale e aggiornato con google-genai
 client = genai.Client(api_key=api_key)
 
-# Funzione rapida per la ricerca web (limitata a 2 risultati per massima velocità)
+# Funzione rapida per la ricerca web intelligente
 def search_web(query):
     try:
         with DDGS() as ddgs:
@@ -42,9 +42,9 @@ if prompt := st.chat_input("Scrivi qui il tuo messaggio..."):
         st.markdown(prompt)
 
     with st.chat_message("assistant"):
-        with st.spinner("Elaborazione rapida..."):
+        with st.spinner("Elaborazione in corso..."):
             try:
-                # FILTRO VELOCITÀ: Cerca sul web SOLO se ci sono parole chiave specifiche di notizie o attualità
+                # Filtro intelligente per attivare la ricerca web solo se necessario
                 parole_chiave_web = ["notizie", "meteo", "ultime", "chi è", "cos'è", "previsioni", "oggi"]
                 serve_il_web = any(parola in prompt.lower() for parola in parole_chiave_web)
                 
@@ -54,9 +54,9 @@ if prompt := st.chat_input("Scrivi qui il tuo messaggio..."):
                     if web_results:
                         contesto = f"Informazioni recenti dal web:\n{web_results}\n\nDomanda dell'utente: {prompt}"
 
-                # Modello flash ultra-rapido
+                # Utilizzo del modello aggiornato richiesto da Google
                 response = client.models.generate_content(
-                    model='gemini-2.0-flash',
+                    model='gemini-3.8-flash',
                     contents=contesto
                 )
                 answer = response.text
