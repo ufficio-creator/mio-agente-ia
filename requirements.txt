@@ -1,3 +1,2 @@
-pip install 
-streamlit google-genai 
-duckduckgo-search
+pip install --upgrade streamlit google-genai duckduckgo-search
+streamlit run app.py
