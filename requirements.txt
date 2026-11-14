@@ -1,3 +1,1 @@
-streamlit
-google-genai
-duckduckgo-search
+pip install streamlit google-genai duckduckgo-search
